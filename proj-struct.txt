@@ -1,0 +1,41 @@
+realestate-analysis-backend/
+  app/
+    api/v1/routes/
+      health.py
+      properties.py
+      analyses.py
+    core/
+      config.py
+    db/
+      base.py
+      session.py
+    models/
+      property.py
+    repositories/
+      property_repository.py
+    schemas/
+      property.py
+      analysis.py
+    services/
+      rent_vs_buy_service.py
+    main.py
+
+  alembic/
+    env.py
+    versions/
+      0001_initial.py
+
+  tests/
+    test_health.py
+    test_rent_vs_buy.py
+    test_properties.py
+
+  .github/workflows/
+    ci.yml
+
+  docker-compose.yml
+  Dockerfile
+  pyproject.toml
+  Makefile
+  README.md
+  .env.example
