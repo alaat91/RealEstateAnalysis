@@ -3,9 +3,9 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+from app import models  # noqa: F401  # Ensure models are imported for Alembic autogenerate
 from app.core.config import get_settings
 from app.db.base import Base
-from app import models  # noqa: F401  # Ensure models are imported for Alembic autogenerate
 
 config = context.config
 
@@ -18,11 +18,26 @@ config.set_main_option("sqlalchemy.url", settings.database_url)
 target_metadata = Base.metadata
 
 
+def include_name(name, type_, parent_names):
+    """
+    Tell Alembic autogenerate to only care about our app tables.
+
+    This prevents Alembic from trying to drop PostGIS/Tiger extension tables
+    such as spatial_ref_sys, topology, state, county, addr, etc.
+    """
+    if type_ == "table":
+        return name in target_metadata.tables
+
+    return True
+
+
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
+
     context.configure(
         url=url,
         target_metadata=target_metadata,
+        include_name=include_name,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
@@ -39,7 +54,11 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            include_name=include_name,
+        )
 
         with context.begin_transaction():
             context.run_migrations()
